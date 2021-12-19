@@ -1,6 +1,6 @@
 # cocoapods-catalyst-validator
 
-A description of cocoapods-catalyst-validator.
+A cocoapods plugin for detecting whether the binary files in the integrated Pod support catalyst.
 
 ## Installation
 
@@ -8,4 +8,11 @@ A description of cocoapods-catalyst-validator.
 
 ## Usage
 
-    $ pod spec validator POD_NAME
+    plugin 'cocoapods-catalyst-validator'
+
+
+    target AExample do
+        use_catalyst_verify! [:warning/:error]
+
+        pod 'SomePod'
+    end

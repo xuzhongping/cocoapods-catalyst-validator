@@ -1,0 +1,22 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+plugin 'cocoapods-catalyst-validator'
+
+# use_catalyst_verify! :warning/:error
+use_catalyst_verify! :error
+
+#use_catalyst_verify! :error
+
+target 'AExample' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  pod 'FirebaseAnalytics'
+  
+  # Pods for AExample
+
+  target 'AExampleCP' do
+  end
+  
+end

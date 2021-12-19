@@ -1,1 +1,3 @@
-require 'cocoapods-catalyst-validator/command'
+require 'cocoapods-catalyst-validator/cocoapods-catalyst-validator'
+
+
