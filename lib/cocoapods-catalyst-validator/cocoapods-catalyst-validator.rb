@@ -81,7 +81,7 @@ module Pod
                 when :warning
                   UI.puts "Catalyst verify warning: \n#{unsupport_names}".yellow
                 else :error
-                  raise Informative, "Catalyst verify error: \n#{unsupport_names}".red
+                  raise Informative, "Catalyst verify error: \n#{unsupport_names}"
                 end
               end
             end
