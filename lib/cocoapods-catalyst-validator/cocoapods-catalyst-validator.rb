@@ -42,8 +42,11 @@ module Pod
       end
 
       def catalyst_verification
-        @catalyst_verification if root?
-        @catalyst_verification ? @catalyst_verification : parent.catalyst_verification
+        if root?
+          @catalyst_verification
+        else
+          @catalyst_verification || parent.catalyst_verification
+        end
       end
     end
   end
