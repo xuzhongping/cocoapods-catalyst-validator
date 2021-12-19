@@ -36,7 +36,7 @@ module Pod
 
       def use_catalyst_verify!(type = :warning)
         unless [:warning, :error].include?(type)
-          raise StandardError, "Unsupported catalyst verify type '#{type}', must be :warning or :error."
+          raise Informative, "Unsupported catalyst verify type '#{type}', must be :warning or :error."
         end
         @catalyst_verification = type
       end
@@ -60,6 +60,7 @@ module Pod
           verify_pods_vendored_artifacts_support_catalyst
         end
         def verify_pods_vendored_artifacts_support_catalyst
+          libs_cache = {}
           aggregate_targets.each do |aggregate_target|
             catalyst_verification = aggregate_target.target_definition.catalyst_verification
             next unless [:warning, :error].include?(catalyst_verification)
@@ -71,22 +72,22 @@ module Pod
                 verify_libraries = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_libraries)
                 verify_xcframeworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_xcframeworks)
                 verify_frameworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_frameworks) - verify_xcframeworks
-                un_support_catalyst_libs = verify_libraries.select{ |l| !CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_library?(l)}
-                un_support_catalyst_libs += verify_frameworks.select{ |f| !CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(f)}
-                un_support_catalyst_libs += verify_xcframeworks.select{ |x| !CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(x)}
+                un_support_catalyst_libs = verify_libraries.reject{ |l| libs_cache[l] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_library?(lib)}
+                un_support_catalyst_libs.concat verify_frameworks.reject{ |f| libs_cache[f] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(f)}
+                un_support_catalyst_libs.concat verify_xcframeworks.reject{ |x| libs_cache[x] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(x)}
                 unsupport_names = un_support_catalyst_libs.map(&:basename).map(&:to_s)
-                unless un_support_catalyst_libs.empty?
-                  case catalyst_verification
-                  when :warning
-                    UI.puts "catalyst verify warning: #{unsupport_names}".yellow
-                  else :error
-                    raise StandardError, "catalyst verify error: #{unsupport_names}"
-                  end
+                next if unsupport_names.empty?
+                case catalyst_verification
+                when :warning
+                  UI.puts "Catalyst verify warning: \n#{unsupport_names}".yellow
+                else :error
+                  raise Informative, "Catalyst verify error: \n#{unsupport_names}".red
                 end
               end
             end
           end
         end
+
       end
     end
   end
