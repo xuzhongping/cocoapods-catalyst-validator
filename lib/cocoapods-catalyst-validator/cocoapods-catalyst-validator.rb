@@ -72,7 +72,7 @@ module Pod
                 verify_libraries = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_libraries)
                 verify_xcframeworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_xcframeworks)
                 verify_frameworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_frameworks) - verify_xcframeworks
-                un_support_catalyst_libs = verify_libraries.reject{ |l| libs_cache[l] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_library?(lib)}
+                un_support_catalyst_libs = verify_libraries.reject{ |l| libs_cache[l] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_library?(l)}
                 un_support_catalyst_libs.concat verify_frameworks.reject{ |f| libs_cache[f] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(f)}
                 un_support_catalyst_libs.concat verify_xcframeworks.reject{ |x| libs_cache[x] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(x)}
                 unsupport_names = un_support_catalyst_libs.map(&:basename).map(&:to_s)
