@@ -9,19 +9,34 @@ module CocoapodsCatalystValidator
   SUPPORTS_MACCATALYST = 'SUPPORTS_MACCATALYST'
 
   class CatalystValidator
-    def self.support_catalyst?(binary)
-      MachO.open(binary).load_commands.select { |l| l.is_a?(BuildVersionCommand) }.first.platform == CATALYST_PLATFORM
-    end
-
     def self.support_catalust_for_xcframework?(path)
       !Pathname.glob(path + '*-maccatalyst').empty?
     end
+
     def self.support_catalust_for_framework?(path)
-      false
+      path += '.framework' unless path.extname == '.framework'
+      name = path.basename(".framework")
+      support_catalyst?(path + name)
     end
+
     def self.support_catalust_for_library?(path)
-      false
+      support_catalyst?(path)
     end
+
+    def self.support_catalyst?(path)
+      !binary_arch(path).map {|a| platform_is_catalyst?(path, a)}.include?(false)
+    end
+
+    def self.binary_arch(path)
+      `lipo -archs "#{path}"`.split(' ')
+    end
+
+    def self.platform_is_catalyst?(path, arch)
+      platform = `otool -l -arch #{arch} "#{path}" | grep platform -m 1`
+      return false unless platform =~ /platform\s+(\w*)/
+      return ['MACCATALYST', '1'].include?(platform.match(/platform\s+(\w*)/)[1])
+    end
+
   end
 end
 
@@ -74,7 +89,7 @@ module Pod
                 verify_frameworks = pod_targets.flat_map(&:file_accessors).flat_map(&:vendored_frameworks) - verify_xcframeworks
                 un_support_catalyst_libs = verify_libraries.reject{ |l| libs_cache[l] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_library?(l)}
                 un_support_catalyst_libs.concat verify_frameworks.reject{ |f| libs_cache[f] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(f)}
-                un_support_catalyst_libs.concat verify_xcframeworks.reject{ |x| libs_cache[x] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_framework?(x)}
+                un_support_catalyst_libs.concat verify_xcframeworks.reject{ |x| libs_cache[x] ||= CocoapodsCatalystValidator::CatalystValidator.support_catalust_for_xcframework?(x)}
                 unsupport_names = un_support_catalyst_libs.map(&:basename).map(&:to_s)
                 next if unsupport_names.empty?
                 case catalyst_verification
