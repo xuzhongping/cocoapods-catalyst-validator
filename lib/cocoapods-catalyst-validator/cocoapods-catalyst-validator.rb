@@ -5,8 +5,8 @@ require 'macho'
 
 
 module CocoapodsCatalystValidator
-  CATALYST_PLATFORM = 6
-  SUPPORTS_MACCATALYST = 'SUPPORTS_MACCATALYST'
+  CATALYST_PLATFORM = 6.freeze
+  SUPPORTS_MACCATALYST = 'SUPPORTS_MACCATALYST'.freeze
 
   class CatalystValidator
     def self.support_catalust_for_xcframework?(path)
@@ -43,18 +43,14 @@ end
 module Pod
   class Podfile
     def use_catalyst_verify!(type = :warning)
-      current_target_definition.use_catalyst_verify!(type)
+      unless [:warning, :error].include?(type)
+        raise Informative, "Unsupported catalyst verify type '#{type}', must be :warning or :error."
+      end
+      current_target_definition.catalyst_verification = type
     end
 
     class TargetDefinition
       attr_accessor :catalyst_verification
-
-      def use_catalyst_verify!(type = :warning)
-        unless [:warning, :error].include?(type)
-          raise Informative, "Unsupported catalyst verify type '#{type}', must be :warning or :error."
-        end
-        @catalyst_verification = type
-      end
 
       def catalyst_verification
         if root?
